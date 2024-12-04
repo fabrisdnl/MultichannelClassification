@@ -1,28 +1,44 @@
+import torch
 from torch.utils.data import Dataset
-from utils import utils
 
 
 class EuroSATDataset(Dataset):
-    def __init__(self, image_paths, labels, transform=None):
-        self.image_paths = image_paths
+    """
+    PyTorch Dataset for EuroSAT data with 13-band images.
+
+    Accepts preloaded data and applies transformations.
+
+    Args:
+        data (numpy array): Preloaded images.
+        labels (list[int]): Numeric labels corresponding to each image.
+        transform (callable, optional): Transformations to apply to the data.
+    """
+
+    def __init__(self, data, labels, transform=None):
+        self.data = data
         self.labels = labels
         self.transform = transform
 
     def __len__(self):
-        return len(self.image_paths)
+        return len(self.data)
 
     def __getitem__(self, idx):
-        img_path = self.image_paths[idx]
+        # Access the 13-band image
+        image = self.data[idx]
+
+        # Access the numeric label
         label = self.labels[idx]
 
-        # Load the 13-band image
-        img = utils.load_image_torch(img_path)
+        # Ensure the image has 13 channels
+        if image.shape[0] != 13:
+            raise ValueError(f"Expected image shape [13, height, width], but got {image.shape}")
 
-        # Permute the dimensions to [channels, height, width]
-        img = img.permute(2, 0, 1)  # Change from [height, width, channels] to [channels, height, width]
-
-        # Apply transformations
+        # Apply transformations, if any
         if self.transform:
-            img = self.transform(img)
+            image = self.transform(image)
 
-        return img, label
+        # Convert the image and label to PyTorch tensors
+        image = torch.tensor(image, dtype=torch.float32)
+        label = torch.tensor(label).long()
+
+        return image, label
