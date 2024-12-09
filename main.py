@@ -20,6 +20,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.cuda.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+import numpy as np
 
 
 def create_arg_parser():
@@ -36,7 +37,7 @@ def create_arg_parser():
     return parser
 
 
-def process_split(split_name, dataloaders, device, save_dir, load_saved_models):
+def process_split(split_name, dataloaders, device, save_dir, load_saved_models, class_map):
     """
     Processes a single data split: trains and evaluates the model or loads a pre-trained model.
 
@@ -46,11 +47,13 @@ def process_split(split_name, dataloaders, device, save_dir, load_saved_models):
         device (torch.device): Device to use for computations.
         save_dir (str): Directory where models will be saved.
         load_saved_models (bool): Whether to load pre-trained models.
+        class_map (dict): Mapping of class names to integer indices.
+
     Returns:
         dict: Dictionary containing metrics (losses, accuracies, and test accuracy).
     """
     model_path = os.path.join(save_dir, f"model_split_{split_name}.pth")
-    model = HybridModel(num_classes=10).to(device)
+    model = HybridModel(num_classes=len(class_map)).to(device)  # Use the number of classes from class_map
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.2)
     criterion = nn.CrossEntropyLoss()
@@ -73,6 +76,15 @@ def process_split(split_name, dataloaders, device, save_dir, load_saved_models):
     print(f"Testing model for {split_name} split...")
     test_accuracy, y_pred, y_true = test.test_model(model, dataloaders["test"], device)
 
+    # Plot confusion matrix
+    confusion_matrix_output_dir = os.path.join(save_dir, f"confusion_matrix_{split_name}")
+    metrics.plot_confusion_matrix(
+        y_true=np.array(y_true),
+        y_pred=np.array(y_pred),
+        classes=list(class_map.keys()),  # Use class names from class_map
+        output_dir=confusion_matrix_output_dir
+    )
+
     return {
         "train_losses": train_losses,
         "val_losses": val_losses,
@@ -87,6 +99,7 @@ def execute(data_dir, save_dir, load_saved_models):
     print("Loading images into memory...")
     all_images, all_labels, class_map = utils.load_all_images(data_dir)
     print(f"Number of images loaded: {len(all_images)}")
+    print(f"Class map: {class_map}")
 
     # Create splits
     splits = {
@@ -132,7 +145,14 @@ def execute(data_dir, save_dir, load_saved_models):
         print(f"\nProcessing {split_name} split...")
         split_output_dir = os.path.join(output_dir, split_name)
         os.makedirs(split_output_dir, exist_ok=True)
-        results[split_name] = process_split(split_name, dataloaders[split_name], device, save_dir, load_saved_models)
+        results[split_name] = process_split(
+            split_name,
+            dataloaders[split_name],
+            device,
+            save_dir,
+            load_saved_models,
+            class_map  # Pass class_map to process_split
+        )
         metrics.plot_metrics(
             train_losses=results[split_name]["train_losses"],
             val_losses=results[split_name]["val_losses"],
