@@ -39,9 +39,10 @@ def process_split(split_name, dataloaders, device, output_dir, save_dir, load_sa
         class_map (dict): Mapping of class names to integer indices.
 
     Returns:
-        dict: Dictionary containing metrics (losses, accuracies, and test accuracy).
+        dict: Dictionary containing metrics (test accuracy).
     """
     model_path = os.path.join(save_dir, f"model_split_{split_name}.pth")
+    metrics_path = os.path.join(save_dir, f"metrics_split_{split_name}.pkl")
     model = HybridModel(num_classes=len(class_map)).to(device)  # Use the number of classes from class_map
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.2)
@@ -51,13 +52,23 @@ def process_split(split_name, dataloaders, device, output_dir, save_dir, load_sa
     if load_saved_models and os.path.exists(model_path):
         print(f"Loading saved model for {split_name} split...")
         model.load_state_dict(torch.load(model_path))
-        train_losses, val_losses, train_accuracies, val_accuracies = [], [], [], []  # Placeholder if not training
+        # Load training metrics if model is loaded
+        metrics_loaded = utils.load_metrics(metrics_path)
+        train_losses = metrics_loaded['train_losses']
+        train_accuracies = metrics_loaded['train_accuracies']
+        val_losses = metrics_loaded['val_losses']
+        val_accuracies = metrics_loaded['val_accuracies']
     else:
         print(f"Training model for {split_name} split...")
-        train_losses, val_losses, train_accuracies, val_accuracies = train.train_model(
+        metrics_computed = train.train_model(
             model, dataloaders["train"], dataloaders["validation"], criterion, optimizer, scheduler, device,
             num_epochs=25
         )
+        train_losses = metrics_computed['train_losses']
+        train_accuracies = metrics_computed['train_accuracies']
+        val_losses = metrics_computed['val_losses']
+        val_accuracies = metrics_computed['val_accuracies']
+        utils.save_metrics(metrics_computed, metrics_path)
         torch.save(model.state_dict(), model_path)
         print(f"Model for {split_name} split saved at {model_path}.")
 

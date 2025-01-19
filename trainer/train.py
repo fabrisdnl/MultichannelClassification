@@ -18,20 +18,17 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
         num_epochs (int): Number of epochs to train the model.
 
     Returns:
-        tuple: A tuple containing four lists:
+        metrics: A dict containing four lists:
             - Training losses for each epoch.
-            - Validation losses for each epoch.
             - Training accuracies for each epoch.
+            - Validation losses for each epoch.
             - Validation accuracies for each epoch.
     """
     model.to(device)
     scaler = GradScaler()
 
     # Initialize lists to store losses and accuracies
-    train_losses = []
-    val_losses = []
-    train_accuracies = []
-    val_accuracies = []
+    metrics = {'train_losses': [], 'train_accuracies': [], 'val_losses': [], 'val_accuracies': []}
 
     for epoch in range(num_epochs):
         # Training Phase
@@ -68,8 +65,8 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
         # Compute average training loss and accuracy
         epoch_train_loss = running_train_loss / len(train_loader)
         epoch_train_accuracy = correct_train / total_train
-        train_losses.append(epoch_train_loss)
-        train_accuracies.append(epoch_train_accuracy)
+        metrics['train_losses'].append(epoch_train_loss)
+        metrics['train_accuracies'].append(epoch_train_accuracy)
 
         # Validation Phase
         model.eval()
@@ -100,8 +97,8 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
         # Compute average validation loss and accuracy
         epoch_val_loss = running_val_loss / len(validation_loader)
         epoch_val_accuracy = correct_val / total_val
-        val_losses.append(epoch_val_loss)
-        val_accuracies.append(epoch_val_accuracy)
+        metrics['val_losses'].append(epoch_val_loss)
+        metrics['val_accuracies'].append(epoch_val_accuracy)
 
         # Scheduler step
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
@@ -116,4 +113,4 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
             f"Train Accuracy: {epoch_train_accuracy:.4f}, Val Accuracy: {epoch_val_accuracy:.4f}"
         )
 
-    return train_losses, val_losses, train_accuracies, val_accuracies
+    return metrics

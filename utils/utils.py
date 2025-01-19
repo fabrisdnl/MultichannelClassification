@@ -1,13 +1,10 @@
 import os
-import matplotlib.pyplot as plt
 import numpy as np
 import tifffile as tiff
 import torch
 from torch.utils.data import DataLoader
-from collections import defaultdict
-from sklearn.model_selection import train_test_split
 from base.EuroSATDataset import EuroSATDataset
-from typing import List, Tuple, Dict
+import pickle
 
 
 def load_all_images(data_dir):
@@ -214,3 +211,32 @@ def compute_mean_std(train_images, bands):
         "mean": mean,
         "std": std
     }
+
+
+def save_metrics(metrics, filename):
+    """
+    Save metrics (such as loss and accuracy) to a file for later use.
+
+    Args:
+        metrics (dict): Dictionary containing the metrics to save,
+                        typically {'train_loss': ..., 'train_accuracy': ...,
+                                  'val_loss': ..., 'val_accuracy': ...}.
+        filename (str): Path to the file where metrics will be saved.
+    """
+    with open(filename, 'wb') as f:
+        pickle.dump(metrics, f)
+
+
+def load_metrics(filename):
+    """
+    Load previously saved metrics from a file.
+
+    Args:
+        filename (str): Path to the file containing saved metrics.
+
+    Returns:
+        dict: Dictionary containing the loaded metrics.
+    """
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
+
