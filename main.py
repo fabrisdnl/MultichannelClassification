@@ -4,22 +4,11 @@ import os
 from utils import utils, metrics
 from base.EuroSATDataset import EuroSATDataset
 from transform.EuroSATTransform import EuroSATTransform
-from model.CustomCNN import CustomCNN
-from model.VisionTransformer import VisionTransformer
-from model.EnsembleModel import EnsembleModel
-from model.LightweightViT import LightweightViT
-from model.AdvancedViT import AdvancedViT
-from model.SpectralViT import SpectralViT
 from model.HybridModel import HybridModel
 from trainer import train, test
 import torch
-from torch.utils.data import DataLoader
-import torchvision.models as models
-from torchvision.models import ResNet50_Weights, GoogLeNet_Weights
 import torch.nn as nn
 import torch.optim as optim
-from torch.cuda.amp import autocast, GradScaler
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 import numpy as np
 
 
@@ -37,7 +26,7 @@ def create_arg_parser():
     return parser
 
 
-def process_split(split_name, dataloaders, device, save_dir, load_saved_models, class_map):
+def process_split(split_name, dataloaders, device, output_dir, save_dir, load_saved_models, class_map):
     """
     Processes a single data split: trains and evaluates the model or loads a pre-trained model.
 
@@ -77,7 +66,7 @@ def process_split(split_name, dataloaders, device, save_dir, load_saved_models, 
     test_accuracy, y_pred, y_true = test.test_model(model, dataloaders["test"], device)
 
     # Plot confusion matrix
-    confusion_matrix_output_dir = os.path.join(save_dir, f"confusion_matrix_{split_name}")
+    confusion_matrix_output_dir = os.path.join(output_dir, f"confusion_matrix_{split_name}")
     metrics.plot_confusion_matrix(
         y_true=np.array(y_true),
         y_pred=np.array(y_pred),
@@ -149,6 +138,7 @@ def execute(data_dir, save_dir, load_saved_models):
             split_name,
             dataloaders[split_name],
             device,
+            output_dir,
             save_dir,
             load_saved_models,
             class_map  # Pass class_map to process_split

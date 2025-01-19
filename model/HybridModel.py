@@ -2,7 +2,7 @@ import torch.nn as nn
 from model.CustomTransformerEncoder import CustomTransformerEncoder
 
 
-# Hybrid Model with R(2+1)D + Swin Transformer
+# Hybrid Model with 3D CNN + Custom Transformer Encoder
 class HybridModel(nn.Module):
     def __init__(self, num_classes=10, embed_dim=512, num_heads=8, hidden_dim=1024, num_layers=6):
         super(HybridModel, self).__init__()
