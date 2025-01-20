@@ -4,21 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15cb03c7-5258-444e-8d95-4af81c103907" name="Changes" comment="upload project work in progress">
-      <change beforePath="$PROJECT_DIR$/.idea/LandCoverSentinel2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LandCoverSentinel2.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="15cb03c7-5258-444e-8d95-4af81c103907" name="Changes" comment="updating readme">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/EuroSATDataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/base/EuroSATDataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainer/evaluate.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainer/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainer/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainer/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/transform/EuroSATTransform.py" beforeDir="false" afterPath="$PROJECT_DIR$/transform/EuroSATTransform.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+    </option>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -82,7 +79,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="--dataset_path &quot;../EuroSAT_MS&quot; --saves_dir &quot;saves&quot;" />
+      <option name="PARAMETERS" value="--dataset_path &quot;../EuroSAT_MS&quot; --saves_dir &quot;saves&quot; --load_saved_models" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -115,7 +112,87 @@
       <option name="project" value="LOCAL" />
       <updated>1727173371609</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="working code with accuracy 0.9792">
+      <option name="closed" value="true" />
+      <created>1733320389148</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1733320389148</updated>
+    </task>
+    <task id="LOCAL-00003" summary="some adj in metrics and plots">
+      <option name="closed" value="true" />
+      <created>1733760425811</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1733760425811</updated>
+    </task>
+    <task id="LOCAL-00004" summary="some adj in metrics and plots">
+      <option name="closed" value="true" />
+      <created>1737292333388</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1737292333388</updated>
+    </task>
+    <task id="LOCAL-00005" summary="some adj in metrics and plots">
+      <option name="closed" value="true" />
+      <created>1737292478850</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1737292478850</updated>
+    </task>
+    <task id="LOCAL-00006" summary="some adj in metrics and plots">
+      <option name="closed" value="true" />
+      <created>1737292787425</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1737292787425</updated>
+    </task>
+    <task id="LOCAL-00007" summary="some adj in metrics and plots">
+      <option name="closed" value="true" />
+      <created>1737292845694</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1737292845694</updated>
+    </task>
+    <task id="LOCAL-00008" summary="some adj in metrics and plots">
+      <option name="closed" value="true" />
+      <created>1737292920311</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1737292920311</updated>
+    </task>
+    <task id="LOCAL-00009" summary="completed project">
+      <option name="closed" value="true" />
+      <created>1737299342681</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1737299342681</updated>
+    </task>
+    <task id="LOCAL-00010" summary="completed project">
+      <option name="closed" value="true" />
+      <created>1737314351794</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1737314351794</updated>
+    </task>
+    <task id="LOCAL-00011" summary="updating readme">
+      <option name="closed" value="true" />
+      <created>1737394068370</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1737394068370</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -131,6 +208,10 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="upload project work in progress" />
-    <option name="LAST_COMMIT_MESSAGE" value="upload project work in progress" />
+    <MESSAGE value="working code with accuracy 0.9792" />
+    <MESSAGE value="some adj in metrics and plots" />
+    <MESSAGE value="completed project" />
+    <MESSAGE value="updating readme" />
+    <option name="LAST_COMMIT_MESSAGE" value="updating readme" />
   </component>
 </project>
