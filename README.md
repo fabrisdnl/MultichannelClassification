@@ -12,8 +12,16 @@ The runs have been executed using:
 
 ## Usage
 To execute the code the input parameters must be:
---dataset_path "../EuroSAT_MS" --saves_dir "saves"
 
-Obviously the dataset path must be corrected according to the relative path.
+```
+usage: main.py --dataset_path "../EuroSAT_MS" --saves_dir "saves"
+
+where instead of "../EuroSAT_MS" must be written the path to the dataset,
+while "saves" create a directory in the project main directory to save the models
+
+optional: --load_saved_models to use directly the precomputed models
+            in later executions; can't be used in first execution
+```
+
 The dataset is supposed to be already extracted in a local folder.
 
