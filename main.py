@@ -23,6 +23,8 @@ def create_arg_parser():
     parser.add_argument('--dataset_path', required=True, help='Path to the dataset directory containing images.')
     parser.add_argument('--saves_dir', default="saves", help='Path to save models and logs (default: "saves").')
     parser.add_argument('--load_saved_models', action='store_true', help='Load pre-trained models if available.')
+    parser.add_argument('--compressed_dataset', action='store_true', help='Indicates if the dataset is in compressed '
+                                                                          'HDF5 format.')
     return parser
 
 
@@ -94,10 +96,19 @@ def process_split(split_name, dataloaders, device, output_dir, save_dir, load_sa
     }
 
 
-def execute(data_dir, save_dir, load_saved_models):
-    # Load all images into memory
-    print("Loading images into memory...")
-    all_images, all_labels, class_map = utils.load_all_images(data_dir)
+def execute(data_dir, save_dir, load_saved_models, compressed_dataset):
+    if compressed_dataset:
+        compressed_path = data_dir
+        if not os.path.exists(compressed_path):
+            raise FileNotFoundError(f"Compressed dataset not found at {compressed_path}.")
+        print("Loading compressed images into memory...")
+        all_images, all_labels, class_map = utils.load_compressed_dataset(compressed_path)
+    else:
+        print("Saving dataset in compressed HDF5 format...")
+        compressed_path = os.path.join(os.path.dirname(data_dir), "dataset_compressed.h5")
+        utils.create_compressed_dataset(data_dir, compressed_path)
+        all_images, all_labels, class_map = utils.load_compressed_dataset(compressed_path)
+
     print(f"Number of images loaded: {len(all_images)}")
     print(f"Class map: {class_map}")
 
@@ -122,6 +133,7 @@ def execute(data_dir, save_dir, load_saved_models):
         }
 
     # Create datasets and dataloaders
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Creating datasets and dataloaders...")
     dataloaders = {}
     for split_name, split_data in splits.items():
@@ -136,7 +148,6 @@ def execute(data_dir, save_dir, load_saved_models):
         dataloaders[split_name] = utils.create_dataloaders(datasets, batch_size=32)
 
     # Process each split
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     results = {}
     output_dir = "output"
     os.makedirs(output_dir, exist_ok=True)
@@ -170,4 +181,4 @@ if __name__ == '__main__':
     arg_parser = create_arg_parser()
     parsed_args = arg_parser.parse_args(sys.argv[1:])
     os.makedirs(parsed_args.saves_dir, exist_ok=True)
-    execute(parsed_args.dataset_path, parsed_args.saves_dir, parsed_args.load_saved_models)
+    execute(parsed_args.dataset_path, parsed_args.saves_dir, parsed_args.load_saved_models, parsed_args.compressed_dataset)

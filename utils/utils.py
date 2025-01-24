@@ -1,4 +1,6 @@
 import os
+import h5py
+import ast
 import numpy as np
 import tifffile as tiff
 import torch
@@ -87,6 +89,109 @@ def load_image_numpy(image_path):
     image = np.array(image, dtype=np.float32)
 
     return image
+
+
+def create_compressed_dataset(dataset_path, compressed_path):
+    """
+    Creates a compressed HDF5 dataset from the raw image dataset.
+
+    Args:
+        dataset_path (str): Path to the raw dataset.
+        compressed_path (str): Path to save the compressed dataset.
+    """
+    print("Compressing dataset into HDF5 format...")
+    compress_to_hdf5(dataset_path, compressed_path)
+    print(f"Compressed dataset saved at {compressed_path}.")
+
+
+def load_compressed_dataset(compressed_path):
+    """
+    Loads images and labels from the compressed HDF5 dataset.
+
+    Args:
+        compressed_path (str): Path to the compressed dataset.
+
+    Returns:
+        tuple: Loaded images, labels, and class map.
+    """
+    print("Loading compressed dataset from HDF5 format...")
+    return load_from_hdf5(compressed_path)
+
+
+def compress_to_hdf5(dataset_path, compressed_path):
+    """
+    Compress a dataset of multispectral TIFF images into an HDF5 file.
+
+    Args:
+        dataset_path (str): Path to the dataset directory with TIFF images organized by class.
+        compressed_path (str): Path to the output compressed HDF5 file.
+    """
+    images = []
+    labels = []
+    class_map = {}
+    current_label = 0
+
+    # Scan directories to collect TIFF images and assign labels.
+    for class_name in sorted(os.listdir(dataset_path)):
+        class_dir = os.path.join(dataset_path, class_name)
+        if not os.path.isdir(class_dir):
+            continue
+
+        # Map class name to a label.
+        class_map[class_name] = current_label
+
+        for img_file in sorted(os.listdir(class_dir)):
+            img_path = os.path.join(class_dir, img_file)
+            if img_file.endswith('.tif'):
+                try:
+                    img = tiff.imread(img_path)
+                    images.append(img)
+                    labels.append(current_label)
+                except Exception as e:
+                    print(f"Error loading image: {img_path}. {e}")
+
+        current_label += 1
+
+    images = np.array(images, dtype=np.uint16)
+    labels = np.array(labels, dtype=np.int64)
+
+    # Write the data to an HDF5 file with gzip compression.
+    with h5py.File(compressed_path, 'w') as f:
+        f.create_dataset('images', data=images, compression='gzip', compression_opts=9)
+        f.create_dataset('labels', data=labels, compression='gzip', compression_opts=9)
+        f.create_dataset('class_map', data=np.string_(str(class_map)))
+
+    print(f"Compressed dataset saved to {compressed_path}.")
+
+
+def load_from_hdf5(compressed_path):
+    """
+    Load multispectral images and labels from a compressed HDF5 file.
+
+    Args:
+        compressed_path (str): Path to the compressed HDF5 file.
+
+    Returns:
+        tuple: A tuple containing:
+            - images (np.ndarray): Multispectral images (e.g., 13-band).
+            - labels (np.ndarray): Class labels corresponding to images.
+            - class_map (dict): Mapping of class names to labels.
+    """
+    with h5py.File(compressed_path, 'r') as f:
+        # Load images
+        images = np.array(f['images'])
+        # print(images.shape)
+        if images.ndim == 4 and images.shape[-1] == 13:
+            images = images.transpose(0, 3, 1, 2)
+
+        # Load labels
+        labels = np.array(f['labels'])
+
+        # Load and decode the class map
+        class_map_str = f['class_map'][()].decode('utf-8')
+        class_map = ast.literal_eval(class_map_str)
+
+    return images, labels, class_map
 
 
 def split_data_preloaded(images, labels, train_split, validation_split):
