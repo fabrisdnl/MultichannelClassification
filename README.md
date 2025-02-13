@@ -14,13 +14,14 @@ The runs have been executed using:
 To execute the code the input parameters must be:
 
 ```
-usage: main.py --dataset_path "../EuroSAT_MS" --saves_dir "saves"
+usage: main.py --dataset_path "../EuroSAT_MS" --saves_dir "saves" --mat_format
 
 where instead of "../EuroSAT_MS" must be written the path to the dataset,
 while "saves" create a directory in the project main directory to save the models
 
 optional: --load_saved_models to use directly the precomputed models
             in later executions; can't be used in first execution
+          --mat_format whether the input dataset in in MATLAB data file format
 ```
 
 The dataset is supposed to be already extracted in a local folder.
