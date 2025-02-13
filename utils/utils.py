@@ -10,34 +10,26 @@ import pickle
 from scipy.io import loadmat
 
 
-def load_mat_data(data_dir, normalizer):
+def load_mat_data(data_dir):
     """
-    Load the data from a MATLAB data file .mat e prepare the.
+    Load the data from a MATLAB data file, supporting both v7 and v7.3 formats.
 
     Args:
-        filepath (str): Percorso del file MATLAB .mat.
+        data_dir (str): Path to MATLAB data file.
 
     Returns:
-        tuple: (train_images, train_labels, test_images)
+        tuple: (train_images, test_images, labels)
     """
-    mat_data = loadmat(filepath)
+    with h5py.File(data_dir, 'r') as f:
+        train_images = np.array(f['augTrainingImages'])  # (N, C, H, W)
+        test_images = np.array(f['augTestImages'])       # (M, C, H, W)
+        labels = np.array(f['label']).flatten()          # (1, N) → (N,)
 
-    # Estrarre i dati
-    train_images = mat_data['augTrainingImages']  # 4D uint8 [N, H, W, C]
-    test_images = mat_data['augTestImages']      # 4D uint8 [M, H, W, C]
-    labels = mat_data['label'].flatten()         # 1D array con etichette
+    print(f"Train images shape: {train_images.shape}")
+    print(f"Test images shape: {test_images.shape}")
 
-    # Convertire le immagini in float32 e normalizzarle tra 0 e 1
-    train_images = train_images.astype(np.float32) / 255.0
-    test_images = test_images.astype(np.float32) / 255.0
-
-    # Riordinare i canali per PyTorch [C, H, W]
-    train_images = np.transpose(train_images, (0, 3, 1, 2))
-    test_images = np.transpose(test_images, (0, 3, 1, 2))
-
-    # Apply normalization
-    train_images = normalizer(train_images)
-    test_images = normalizer(test_images)
+    train_images = train_images.astype(np.float32, copy=False)
+    test_images = test_images.astype(np.float32, copy=False)
 
     return train_images, test_images, labels
 

@@ -1,6 +1,8 @@
 import torch
 from tqdm import tqdm
 import numpy as np
+import os
+
 
 def test_model(model, test_loader, device, save_dir):
     """
@@ -10,7 +12,7 @@ def test_model(model, test_loader, device, save_dir):
         model (torch.nn.Module): Trained model to evaluate.
         test_loader (DataLoader): DataLoader for the test dataset.
         device (torch.device): Device to use for evaluation.
-        save_path (str): Path where to save the logits.
+        save_dir (str): Path where to save the logits.
 
     Returns:
         numpy.ndarray: Logits of the test set.

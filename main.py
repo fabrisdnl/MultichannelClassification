@@ -11,6 +11,7 @@ from trainer import train, test, test_logits
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torchvision
 import numpy as np
 
 
@@ -27,10 +28,12 @@ def create_arg_parser():
     parser.add_argument('--load_saved_models', action='store_true', help='Load pre-trained models if available.')
     parser.add_argument('--compressed_dataset', action='store_true', help='Indicates if the dataset is in compressed '
                                                                           'HDF5 format.')
+    parser.add_argument('--mat_format', action='store_true', help='Indicates if the dataset is in mat format.')
+
     return parser
 
 
-def process_mat(dataloaders, device, output_dir, save_dir, load_saved_models, unique_labels, file_name_without_ext):
+def process_mat(dataloaders, device, save_dir, load_saved_models, unique_labels, file_name_without_ext):
     """
     Process: trains and evaluates the model or loads a pre-trained model.
 
@@ -43,7 +46,7 @@ def process_mat(dataloaders, device, output_dir, save_dir, load_saved_models, un
         file_name_without_ext (str): Name of the input file.
 
     Returns:
-        dict: Dictionary containing metrics.
+        dict: Dictionary containing metrics and logits.
     """
     model_path = os.path.join(save_dir, f"model_{file_name_without_ext}.pth")
     metrics_path = os.path.join(save_dir, f"metrics_{file_name_without_ext}.pkl")
@@ -167,7 +170,7 @@ def execute(data_dir, save_dir, load_saved_models, compressed_dataset, mat_forma
         train_data, test_data, labels = utils.load_mat_data(data_dir)
 
         # Compute mean and std on training images
-        mean, std = utils.compute_mean_std_mat(train_images)
+        mean, std = utils.compute_mean_std_mat(train_data)
 
         # Normalization of labels: from [1-10] to [0,9]
         labels -= 1
@@ -205,14 +208,17 @@ def execute(data_dir, save_dir, load_saved_models, compressed_dataset, mat_forma
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        results = process_mat(dataloaders, device, output_dir, save_dir, load_saved_models, unique_labels, file_name_without_ext)
+        output_dir = "output"
+        os.makedirs(output_dir, exist_ok=True)
+
+        results = process_mat(dataloaders, device, save_dir, load_saved_models, unique_labels, file_name_without_ext)
 
         metrics.plot_metrics_train(
             train_losses=results["train_losses"],
             val_losses=results["val_losses"],
             train_accuracies=results["train_accuracies"],
             val_accuracies=results["val_accuracies"],
-            output_dir=split_output_dir,
+            output_dir=output_dir,
         )
 
         print("Execution terminated.")
@@ -299,6 +305,10 @@ def execute(data_dir, save_dir, load_saved_models, compressed_dataset, mat_forma
 
 
 if __name__ == '__main__':
+    print(f"PyTorch Version: {torch.__version__}")
+    print(f"Torchvision Version: {torchvision.__version__}")
+    cuda_available = torch.cuda.is_available()
+    print(f"CUDA Available: {cuda_available}")
     arg_parser = create_arg_parser()
     parsed_args = arg_parser.parse_args(sys.argv[1:])
     os.makedirs(parsed_args.saves_dir, exist_ok=True)

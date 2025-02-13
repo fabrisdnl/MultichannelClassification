@@ -1,5 +1,7 @@
 import torch
 from torch.utils.data import Dataset
+import numpy as np
+
 
 class EuroSATMatDataset(Dataset):
     """
@@ -15,7 +17,7 @@ class EuroSATMatDataset(Dataset):
 
     def __init__(self, data, labels=None, transform=None):
         self.data = data
-        self.labels = labels if labels is not None else np.zeros(len(data))
+        self.labels = labels
         self.transform = transform
 
     def __len__(self):
