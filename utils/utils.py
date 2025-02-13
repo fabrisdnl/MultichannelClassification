@@ -7,6 +7,39 @@ import torch
 from torch.utils.data import DataLoader
 from base.EuroSATDataset import EuroSATDataset
 import pickle
+from scipy.io import loadmat
+
+
+def load_mat_data(data_dir, normalizer):
+    """
+    Load the data from a MATLAB data file .mat e prepare the.
+
+    Args:
+        filepath (str): Percorso del file MATLAB .mat.
+
+    Returns:
+        tuple: (train_images, train_labels, test_images)
+    """
+    mat_data = loadmat(filepath)
+
+    # Estrarre i dati
+    train_images = mat_data['augTrainingImages']  # 4D uint8 [N, H, W, C]
+    test_images = mat_data['augTestImages']      # 4D uint8 [M, H, W, C]
+    labels = mat_data['label'].flatten()         # 1D array con etichette
+
+    # Convertire le immagini in float32 e normalizzarle tra 0 e 1
+    train_images = train_images.astype(np.float32) / 255.0
+    test_images = test_images.astype(np.float32) / 255.0
+
+    # Riordinare i canali per PyTorch [C, H, W]
+    train_images = np.transpose(train_images, (0, 3, 1, 2))
+    test_images = np.transpose(test_images, (0, 3, 1, 2))
+
+    # Apply normalization
+    train_images = normalizer(train_images)
+    test_images = normalizer(test_images)
+
+    return train_images, test_images, labels
 
 
 def load_all_images(data_dir):
@@ -286,6 +319,23 @@ def create_dataloaders(datasets, batch_size):
         "validation": DataLoader(datasets["validation"], batch_size=batch_size, shuffle=False),
         "test": DataLoader(datasets["test"], batch_size=batch_size, shuffle=False),
     }
+
+
+def compute_mean_std_mat(images):
+    """
+    Compute mean adn std for each band of dataset.
+
+    Args:
+        images (np.ndarray): Images array (N, C, H, W).
+
+    Returns:
+        tuple: (mean, std), each of length C (number of bands/channels).
+    """
+    mean = np.mean(images, axis=(0, 2, 3))
+    std = np.std(images, axis=(0, 2, 3))
+
+    return mean, std
+
 
 
 def compute_mean_std(train_images, bands):

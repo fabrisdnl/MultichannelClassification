@@ -75,6 +75,60 @@ def plot_metrics(train_losses, val_losses, train_accuracies, val_accuracies, tes
     print(f"Accuracy comparison plot saved at: {comparison_plot_path}")
 
 
+def plot_metrics_train(train_losses, val_losses, train_accuracies, val_accuracies, output_dir):
+    """
+    Plots training/validation losses, accuracies, and saves the plots.
+
+    Args:
+        train_losses (list): List of training losses for each epoch.
+        val_losses (list): List of validation losses for each epoch.
+        train_accuracies (list): List of training accuracies for each epoch.
+        val_accuracies (list): List of validation accuracies for each epoch.
+        output_dir (str): Directory to save the plots.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Plot Training and Validation Losses
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_losses, label='Training Loss', marker='o')
+    plt.plot(val_losses, label='Validation Loss', marker='o')
+    for i, loss in enumerate(train_losses):
+        if i == 0 or i == len(train_losses) - 1 or i % (len(train_losses) // 4) == 0:
+            plt.text(i, loss, f"{loss:.2f}", fontsize=9, ha='right', color='blue')
+    for i, loss in enumerate(val_losses):
+        if i == 0 or i == len(val_losses) - 1 or i % (len(val_losses) // 4) == 0:
+            plt.text(i, loss, f"{loss:.2f}", fontsize=9, ha='left', color='orange')
+    plt.title('Loss per Epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid()
+    loss_plot_path = os.path.join(output_dir, "loss_per_epoch.png")
+    plt.savefig(loss_plot_path)
+    plt.close()
+    print(f"Loss plot saved at: {loss_plot_path}")
+
+    # Plot Training and Validation Accuracies
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_accuracies, label='Training Accuracy', marker='o')
+    plt.plot(val_accuracies, label='Validation Accuracy', marker='o')
+    for i, acc in enumerate(train_accuracies):
+        if i == 0 or i == len(train_accuracies) - 1 or i % (len(train_accuracies) // 4) == 0:
+            plt.text(i, acc, f"{acc*100:.2f}%", fontsize=9, ha='right', color='blue')
+    for i, acc in enumerate(val_accuracies):
+        if i == 0 or i == len(val_accuracies) - 1 or i % (len(val_accuracies) // 4) == 0:
+            plt.text(i, acc, f"{acc*100:.2f}%", fontsize=9, ha='left', color='orange')
+    plt.title('Accuracy per Epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.grid()
+    acc_plot_path = os.path.join(output_dir, "accuracy_per_epoch.png")
+    plt.savefig(acc_plot_path)
+    plt.close()
+    print(f"Accuracy plot saved at: {acc_plot_path}")
+
+
 def plot_confusion_matrix(y_true, y_pred, classes, output_dir):
     """
     Plots a confusion matrix and saves it to the specified directory.
