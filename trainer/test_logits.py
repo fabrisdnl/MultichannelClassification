@@ -2,6 +2,7 @@ import torch
 from tqdm import tqdm
 import numpy as np
 import os
+import torch.nn.functional as F
 
 
 def test_model(model, test_loader, device, save_dir):
@@ -20,8 +21,9 @@ def test_model(model, test_loader, device, save_dir):
     model.eval()
     model.to(device)
 
-    # Store logits
+    # Store logits and probabilities
     all_logits = []
+    all_probs = []
 
     with torch.no_grad():
         test_bar = tqdm(test_loader, desc='Testing', unit='batch')
@@ -30,15 +32,22 @@ def test_model(model, test_loader, device, save_dir):
 
             # Forward pass
             outputs = model(inputs)  # Logits (no softmax)
+            probabilities = F.softmax(outputs, dim=1)
 
             # Convert to CPU and store
             all_logits.append(outputs.cpu().numpy())
+            all_probs.append(probabilities.cpu().numpy())
 
-    # Concatenate all logits
     all_logits = np.concatenate(all_logits, axis=0)
+    all_probs = np.concatenate(all_probs, axis=0)
 
-    # Save logits to a file
-    save_path = os.path.join(save_dir, f"logits.npy")
+    print(f"all_logits shape: {all_logits.shape}")
+    print(f"all_probs shape: {all_probs.shape}")
+
+    # Save logits and probs to a file
+    save_path = os.path.join(save_dir, "logits.npy")
     np.save(save_path, all_logits)
+    save_prob_path = os.path.join(save_dir, "probabilities.npy")
+    np.save(save_prob_path, all_probs)
 
     return all_logits
