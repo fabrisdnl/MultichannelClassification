@@ -82,7 +82,7 @@ def process_mat(dataloaders, device, save_dir, load_saved_models, unique_labels,
 
     # Test the model
     print(f"Testing model...")
-    logits = test_logits.test_model(model, dataloaders["test"], device, save_dir)
+    logits = test_logits.test_model(model, dataloaders["test"], device, save_dir, file_name_without_ext)
 
     return {
         "train_losses": train_losses,

@@ -5,7 +5,7 @@ import os
 import torch.nn.functional as F
 
 
-def test_model(model, test_loader, device, save_dir):
+def test_model(model, test_loader, device, save_dir, file_name_without_ext):
     """
     Evaluate the model on the test dataset and save logits.
 
@@ -14,6 +14,7 @@ def test_model(model, test_loader, device, save_dir):
         test_loader (DataLoader): DataLoader for the test dataset.
         device (torch.device): Device to use for evaluation.
         save_dir (str): Path where to save the logits.
+        file_name_without_ext (str): Name of the input file.
 
     Returns:
         numpy.ndarray: Logits of the test set.
@@ -45,9 +46,9 @@ def test_model(model, test_loader, device, save_dir):
     print(f"all_probs shape: {all_probs.shape}")
 
     # Save logits and probs to a file
-    save_path = os.path.join(save_dir, "logits.npy")
+    save_path = os.path.join(save_dir, f"logits_{file_name_without_ext}.npy")
     np.save(save_path, all_logits)
-    save_prob_path = os.path.join(save_dir, "probabilities.npy")
+    save_prob_path = os.path.join(save_dir, f"probs_{file_name_without_ext}.npy")
     np.save(save_prob_path, all_probs)
 
     return all_logits
