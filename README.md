@@ -26,3 +26,13 @@ optional: --load_saved_models to use directly the precomputed models
 
 The dataset is supposed to be already extracted in a local folder.
 
+## 📜 Licenza
+
+Questo software è **sotto licenza proprietaria**. L'uso, la modifica, la distribuzione o la vendita **non sono permessi senza un'esplicita autorizzazione**.
+
+🔒 **Uso commerciale?**  
+Se desideri utilizzare questo software per scopi commerciali o industriali, contattami per ottenere una licenza commerciale:  
+📩 [fabrisd.wm@gmail.com]  
+
+---
+© [2025] [Daniele Fabris] - Tutti i diritti riservati.
