@@ -4,11 +4,11 @@ import torch
 
 class EuroSATNormalize:
     """
-    Normalization for multispectral images with 13 channels.
+    Normalization for multispectral images.
 
     Args:
-        mean (np.ndarray): Array of mean values for each band (length 13).
-        std (np.ndarray): Array of standard deviation values for each band (length 13).
+        mean (np.ndarray): Array of mean values for each band.
+        std (np.ndarray): Array of standard deviation values for each band.
     """
 
     def __init__(self, mean, std):
@@ -20,13 +20,13 @@ class EuroSATNormalize:
         Apply normalization to an image.
 
         Args:
-            image (np.ndarray): Array of shape (13, H, W).
+            image (np.ndarray): Array of shape (C, H, W).
 
         Returns:
             torch.tensor: Normalized image tensor.
         """
-        if image.shape[0] != 13:
-            raise ValueError(f"Expected 13 bands, but got {image.shape[0]} bands")
+        # if image.shape[0] != 13:
+        #     raise ValueError(f"Expected 13 bands, but got {image.shape[0]} bands")
 
         image = image.astype(np.float32)
 

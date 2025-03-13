@@ -1,16 +1,26 @@
-import torch, gc
+import torch
 from tqdm import tqdm
 from torch.amp import autocast, GradScaler
 
 
-def train_model(model, train_loader, validation_loader, criterion, optimizer, scheduler, device, num_epochs=25):
+def initialize_weights(m):
+    if isinstance(m, torch.nn.Conv3d):
+        torch.nn.init.kaiming_uniform_(m.weight, nonlinearity='relu')
+        if m.bias is not None:
+            torch.nn.init.zeros_(m.bias)
+    elif isinstance(m, torch.nn.Linear):
+        torch.nn.init.xavier_uniform_(m.weight)
+        if m.bias is not None:
+            torch.nn.init.zeros_(m.bias)
+
+
+def train_model(model, train_loader, criterion, optimizer, scheduler, device, num_epochs=25):
     """
-    Train the given model with specified hyperparameters.
+    Train the given model without a validation phase.
 
     Args:
         model (torch.nn.Module): The model to train.
         train_loader (DataLoader): DataLoader for the training dataset.
-        validation_loader (DataLoader): DataLoader for the validation dataset.
         criterion (torch.nn.Module): Loss function.
         optimizer (torch.optim.Optimizer): Optimization algorithm.
         scheduler (torch.optim.lr_scheduler._LRScheduler or ReduceLROnPlateau): Learning rate scheduler.
@@ -18,12 +28,12 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
         num_epochs (int): Number of epochs to train the model.
 
     Returns:
-        metrics: A dict containing four lists:
+        metrics: A dict containing two lists:
             - Training losses for each epoch.
             - Training accuracies for each epoch.
-            - Validation losses for each epoch.
-            - Validation accuracies for each epoch.
     """
+    # model.apply(initialize_weights)
+
     model.to(device)
     scaler = GradScaler('cuda')
 
@@ -31,10 +41,9 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
     print(f"Model on GPU? {next(model.parameters()).is_cuda}")
 
     # Initialize lists to store losses and accuracies
-    metrics = {'train_losses': [], 'train_accuracies': [], 'val_losses': [], 'val_accuracies': []}
+    metrics = {'train_losses': [], 'train_accuracies': []}
 
     for epoch in range(num_epochs):
-
         # Training Phase
         model.train()
         running_train_loss = 0.0
@@ -47,13 +56,33 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
 
+                if torch.isnan(inputs).any() or torch.isinf(inputs).any():
+                    print(f"[DEBUG] NaN o Inf trovati nei dati di input! Batch index: {t_epoch.n}")
+                    print(
+                        f"Min: {inputs.min().item()}, Max: {inputs.max().item()}, Mean: {inputs.mean().item()}, Std: {inputs.std().item()}")
+
                 # Mixed precision training
                 with autocast(device_type="cuda", dtype=torch.float16):
                     outputs = model(inputs)
+                    # print(f"[DEBUG] Model output min: {outputs.min().item()}, max: {outputs.max().item()}")
+                    if torch.isnan(outputs).any() or torch.isinf(outputs).any():
+                        print(f"[DEBUG] NaN o Inf nei logits all'epoch {epoch + 1}, batch {t_epoch.n}")
+                        print(
+                            f"Logits min: {outputs.min().item()}, max: {outputs.max().item()}, mean: {outputs.mean().item()}")
                     loss = criterion(outputs, labels)
+                    if torch.isnan(loss) or torch.isinf(loss):
+                        print(f"[DEBUG] Loss è NaN o Inf all'epoch {epoch + 1}, batch {t_epoch.n}")
+                        print(f"Loss value: {loss.item()}")
+
+                for name, param in model.named_parameters():
+                    if param.grad is not None:
+                        max_grad = param.grad.abs().max()
+                        print(f"[DEBUG] Gradiente max per {name}: {max_grad}")
 
                 # Scale loss and update weights
                 scaler.scale(loss).backward()
+                scaler.unscale_(optimizer)
+
                 scaler.step(optimizer)
                 scaler.update()
 
@@ -72,52 +101,14 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
         metrics['train_losses'].append(epoch_train_loss)
         metrics['train_accuracies'].append(epoch_train_accuracy)
 
-        # Validation Phase
-        model.eval()
-        running_val_loss = 0.0
-        correct_val = 0
-        total_val = 0
-
-        with torch.no_grad():
-            with tqdm(validation_loader, unit="batch") as t_val:
-                t_val.set_description(f"Epoch {epoch + 1}/{num_epochs} - Validation")
-                for inputs, labels in t_val:
-                    inputs, labels = inputs.to(device), labels.to(device)
-
-                    # Mixed precision evaluation
-                    with autocast(device_type="cuda", dtype=torch.float16):
-                        outputs = model(inputs)
-                        loss = criterion(outputs, labels)
-
-                    running_val_loss += loss.item()
-
-                    # Compute validation accuracy
-                    _, predicted = torch.max(outputs, 1)
-                    correct_val += (predicted == labels).sum().item()
-                    total_val += labels.size(0)
-
-                    del inputs, labels, outputs
-                    torch.cuda.empty_cache()
-
-                    t_val.set_postfix(loss=running_val_loss / (t_val.n + 1))
-
-        # Compute average validation loss and accuracy
-        epoch_val_loss = running_val_loss / len(validation_loader)
-        epoch_val_accuracy = correct_val / total_val
-        metrics['val_losses'].append(epoch_val_loss)
-        metrics['val_accuracies'].append(epoch_val_accuracy)
-
         # Scheduler step
-        if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            scheduler.step(epoch_val_loss)
-        else:
-            scheduler.step()
+        scheduler.step()
 
         # Log epoch results
         print(
             f"Epoch {epoch + 1}/{num_epochs}: "
-            f"Train Loss: {epoch_train_loss:.4f}, Val Loss: {epoch_val_loss:.4f}, "
-            f"Train Accuracy: {epoch_train_accuracy:.4f}, Val Accuracy: {epoch_val_accuracy:.4f}"
+            f"Train Loss: {epoch_train_loss:.4f}, "
+            f"Train Accuracy: {epoch_train_accuracy:.4f}"
         )
 
     return metrics

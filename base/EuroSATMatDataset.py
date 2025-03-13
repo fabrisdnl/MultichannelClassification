@@ -5,7 +5,7 @@ import numpy as np
 
 class EuroSATMatDataset(Dataset):
     """
-    PyTorch Dataset for Mat file data with 13-band images.
+    PyTorch Dataset for Mat file data with multi-band images.
 
     Accepts preloaded data and applies transformations.
 
@@ -30,7 +30,7 @@ class EuroSATMatDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        image = torch.tensor(image, dtype=torch.float32)
+        image = image.clone().detach().to(torch.float32)
 
         if self.labels is not None:
             label = torch.tensor(self.labels[idx], dtype=torch.long)

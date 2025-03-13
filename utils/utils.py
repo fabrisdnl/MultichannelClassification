@@ -7,27 +7,60 @@ import torch
 from torch.utils.data import DataLoader
 from base.EuroSATDataset import EuroSATDataset
 import pickle
-from scipy.io import loadmat
+from sklearn.decomposition import PCA
+import cv2
+
+import os
+import h5py
+import numpy as np
 
 
-def load_mat_data(data_dir):
+def load_mat_data(data_dir, label_txt=False):
     """
-    Load the data from a MATLAB data file, supporting both v7 and v7.3 formats.
+    Load images from a MATLAB .mat file and labels from either the .mat file or a dynamically determined .txt file.
 
     Args:
-        data_dir (str): Path to MATLAB data file.
+        data_dir (str): Path to the MATLAB data file.
+        label_txt (bool): If True, load labels from a dynamically determined .txt file; otherwise, use numerical labels from .mat.
 
     Returns:
         tuple: (train_images, test_images, labels)
     """
     with h5py.File(data_dir, 'r') as f:
-        train_images = np.array(f['augTrainingImages'])  # (N, C, H, W)
-        test_images = np.array(f['augTestImages'])       # (M, C, H, W)
-        labels = np.array(f['label']).flatten()          # (1, N) → (N,)
+        # Load training and test images
+        train_images = np.array(f['augTrainingImages'])  # Shape: (N, C, H, W)
+        test_images = np.array(f['augTestImages'])  # Shape: (M, C, H, W)
 
+        if label_txt:
+            # Extract the last number in the filename (after 'fold_')
+            filename = os.path.basename(data_dir)
+            fold_number = ""
+            if "fold_" in filename:
+                parts = filename.split("fold_")
+                if len(parts) > 1:
+                    fold_number = "".join(filter(str.isdigit, parts[-1]))
+
+            if fold_number:
+                labels_path = os.path.join(os.path.dirname(data_dir), f"label_{fold_number}.txt")
+                labels_path = os.path.normpath(labels_path)  # Ensure correct path format
+
+                if os.path.exists(labels_path):
+                    print(f"Loading labels from {labels_path}")
+                    labels = np.loadtxt(labels_path, dtype=int)
+                else:
+                    raise FileNotFoundError(f"Labels file not found: {labels_path}")
+            else:
+                raise ValueError("Fold number not found in filename.")
+        else:
+            print("Loading labels from .mat file.")
+            labels = np.array(f['label']).flatten()
+
+    # Debugging prints
     print(f"Train images shape: {train_images.shape}")
     print(f"Test images shape: {test_images.shape}")
+    print(f"Labels shape: {labels.shape}")
 
+    # Convert images to float32 for deep learning compatibility
     train_images = train_images.astype(np.float32, copy=False)
     test_images = test_images.astype(np.float32, copy=False)
 
@@ -114,6 +147,26 @@ def load_image_numpy(image_path):
     image = np.array(image, dtype=np.float32)
 
     return image
+
+
+def apply_pca(train_data, test_data, num_components=4):
+    N, C, H, W = train_data.shape
+    M, _, _, _ = test_data.shape
+
+    # Reshape to apply PCA on channels
+    train_reshaped = train_data.reshape(N, C, -1).transpose(0, 2, 1)  # (N, H*W, C)
+    test_reshaped = test_data.reshape(M, C, -1).transpose(0, 2, 1)
+
+    pca = PCA(n_components=num_components)
+
+    train_pca = np.array([pca.fit_transform(img) for img in train_reshaped])  # (N, H*W, num_components)
+    test_pca = np.array([pca.transform(img) for img in test_reshaped])
+
+    # Reshape to original shape
+    train_pca = train_pca.transpose(0, 2, 1).reshape(N, num_components, H, W)
+    test_pca = test_pca.transpose(0, 2, 1).reshape(M, num_components, H, W)
+
+    return train_pca, test_pca
 
 
 def create_compressed_dataset(dataset_path, compressed_path):
@@ -307,9 +360,9 @@ def create_dataloaders(datasets, batch_size):
         dict: Dictionary with 'train', 'validation', and 'test' dataloaders.
     """
     return {
-        "train": DataLoader(datasets["train"], batch_size=batch_size, shuffle=True),
-        "validation": DataLoader(datasets["validation"], batch_size=batch_size, shuffle=False),
-        "test": DataLoader(datasets["test"], batch_size=batch_size, shuffle=False),
+        "train": DataLoader(datasets["train"], batch_size=batch_size, shuffle=True, pin_memory=True),
+        "validation": DataLoader(datasets["validation"], batch_size=batch_size, shuffle=False, pin_memory=True),
+        "test": DataLoader(datasets["test"], batch_size=batch_size, shuffle=False, pin_memory=True),
     }
 
 
@@ -328,6 +381,30 @@ def compute_mean_std_mat(images):
 
     return mean, std
 
+
+def resize_images(images, new_size=(128, 128), interpolation=cv2.INTER_CUBIC):
+    """
+    Resize a batch of multispectral images while preserving details.
+
+    Args:
+        images (numpy.ndarray): Array of shape (N, C, H, W), where:
+                                - N = number of images
+                                - C = number of channels
+                                - H, W = original image size
+        new_size (tuple): Target size for resizing (height, width).
+        interpolation (int): OpenCV interpolation method (default: Bicubic).
+
+    Returns:
+        numpy.ndarray: Resized batch of images with shape (N, C, new_H, new_W).
+    """
+    N, C, H, W = images.shape
+    resized_images = np.zeros((N, C, new_size[0], new_size[1]), dtype=np.float32)
+
+    for i in range(N):  # Iterate over images
+        for c in range(C):  # Iterate over channels
+            resized_images[i, c] = cv2.resize(images[i, c], new_size, interpolation=interpolation)
+
+    return resized_images
 
 
 def compute_mean_std(train_images, bands):

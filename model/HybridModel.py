@@ -4,12 +4,12 @@ from model.CustomTransformerEncoder import CustomTransformerEncoder
 
 # Hybrid Model with 3D CNN + Custom Transformer Encoder
 class HybridModel(nn.Module):
-    def __init__(self, num_classes=10, embed_dim=512, num_heads=8, hidden_dim=1024, num_layers=6):
+    def __init__(self, num_channels=13, num_classes=10, embed_dim=512, num_heads=8, hidden_dim=1024, num_layers=6):
         super(HybridModel, self).__init__()
 
         # 3D CNN
         self.cnn3d = nn.Sequential(
-            nn.Conv3d(in_channels=13, out_channels=64, kernel_size=(3, 3, 3), stride=1, padding=1),
+            nn.Conv3d(in_channels=num_channels, out_channels=64, kernel_size=(3, 3, 3), stride=1, padding=1),
             nn.BatchNorm3d(64),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(2, 2, 2), stride=1, padding=1),

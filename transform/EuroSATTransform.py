@@ -5,11 +5,11 @@ import torch.nn.functional as F
 
 class EuroSATTransform:
     """
-    Data augmentation and normalization for multispectral images with 13 channels.
+    Data augmentation and normalization for multispectral images.
 
     Args:
-        mean (np.ndarray): Array of mean values for each band (length 13).
-        std (np.ndarray): Array of standard deviation values for each band (length 13).
+        mean (np.ndarray): Array of mean values for each band.
+        std (np.ndarray): Array of standard deviation values for each band.
         augment (bool): Whether to apply data augmentation.
     """
 
@@ -23,14 +23,14 @@ class EuroSATTransform:
         Apply normalization and optional data augmentation.
 
         Args:
-            image (np.ndarray): Multispectral image array with shape (13, height, width).
+            image (np.ndarray): Multispectral image array with shape (C, height, width).
 
         Returns:
             torch.Tensor: Transformed image tensor.
         """
         # Ensure image has 13 channels
-        if image.shape[0] != 13:
-            raise ValueError(f"Expected 13 bands, but got {image.shape[0]} bands")
+        # if image.shape[0] != 13:
+        #     raise ValueError(f"Expected 13 bands, but got {image.shape[0]} bands")
 
         # Convert image to float32 for normalization
         image = image.astype(np.float32)
