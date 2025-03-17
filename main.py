@@ -6,7 +6,6 @@ from base.EuroSATDataset import EuroSATDataset
 from base.EuroSATMatDataset import EuroSATMatDataset
 from transform.EuroSATTransform import EuroSATTransform
 from transform.EuroSATNormalize import EuroSATNormalize
-from model.HybridModel import HybridModel
 from model.AdaptedHybridModel import AdaptedHybridModel
 from trainer import train, test, test_logits, train_only
 import torch
@@ -57,7 +56,7 @@ def process_mat_no_valid(dataloaders, device, num_channels, save_dir, load_saved
     """
     model_path = os.path.join(save_dir, f"model_{file_name_without_ext}.pth")
     metrics_path = os.path.join(save_dir, f"metrics_{file_name_without_ext}.pkl")
-    model = HybridModel(num_channels=num_channels, num_classes=len(unique_labels)).to(device)
+    model = AdaptedHybridModel(num_channels=num_channels, num_classes=len(unique_labels)).to(device)
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.2)
     criterion = nn.CrossEntropyLoss()
@@ -474,11 +473,11 @@ def process_single_mat(file_path, save_dir, load_saved_models, no_valid, label_t
         metrics_path = os.path.join(save_dir, f"metrics_{file_name_without_ext}.pkl")
 
         model = AdaptedHybridModel(num_channels=num_channels, num_classes=len(unique_labels)).to(device)
-        optimizer = optim.SGD(model.parameters(), lr=5e-4, momentum=0.9)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.2)
-        # optimizer = optim.AdamW(model.parameters(), lr=1e-3, betas=(0.9, 0.95), weight_decay=1e-2)
-        # scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=3e-3, epochs=25,
-        #                                           steps_per_epoch=len(dataloaders["train"]))
+        # optimizer = optim.AdamW(model.parameters(), lr=1e-5, betas=(0.9, 0.95), weight_decay=1e-4)
+        # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.2)
+        optimizer = optim.AdamW(model.parameters(), lr=1e-5, betas=(0.9, 0.95), weight_decay=1e-4)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=2, min_lr=1e-6)
+
         criterion = nn.CrossEntropyLoss()
 
         if load_saved_models and os.path.exists(model_path):

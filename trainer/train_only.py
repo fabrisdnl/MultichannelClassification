@@ -3,17 +3,6 @@ from tqdm import tqdm
 from torch.amp import autocast, GradScaler
 
 
-def initialize_weights(m):
-    if isinstance(m, torch.nn.Conv3d):
-        torch.nn.init.kaiming_uniform_(m.weight, nonlinearity='relu')
-        if m.bias is not None:
-            torch.nn.init.zeros_(m.bias)
-    elif isinstance(m, torch.nn.Linear):
-        torch.nn.init.xavier_uniform_(m.weight)
-        if m.bias is not None:
-            torch.nn.init.zeros_(m.bias)
-
-
 def train_model(model, train_loader, criterion, optimizer, scheduler, device, num_epochs=25):
     """
     Train the given model without a validation phase.
@@ -102,7 +91,7 @@ def train_model(model, train_loader, criterion, optimizer, scheduler, device, nu
         metrics['train_accuracies'].append(epoch_train_accuracy)
 
         # Scheduler step
-        scheduler.step()
+        scheduler.step(epoch_train_loss)
 
         # Log epoch results
         print(
