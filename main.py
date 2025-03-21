@@ -475,6 +475,7 @@ def process_single_mat(file_path, save_dir, load_saved_models, no_valid, label_t
         model = AdaptedHybridModel(num_channels=num_channels, num_classes=len(unique_labels)).to(device)
         # optimizer = optim.AdamW(model.parameters(), lr=1e-5, betas=(0.9, 0.95), weight_decay=1e-4)
         # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.2)
+        # i secondi usati per foram e eurosat
         optimizer = optim.AdamW(model.parameters(), lr=1e-5, betas=(0.9, 0.95), weight_decay=1e-4)
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=2, min_lr=1e-6)
 
