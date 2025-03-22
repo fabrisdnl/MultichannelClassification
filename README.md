@@ -20,8 +20,8 @@ usage: main.py --dataset_path "<dataset_path>" --saves_dir "<saves_dir>" --direc
 
 optional: --dataset_path path to dataset (or folder of multiple datasets with flag --directory)
           --load_saved_models to use directly the precomputed models in later executions; can't be used in first execution
-          --saves flag to indicates the path where to saves results
-          --labels_txt to specify for foraminifera that the labels are provided in txt files
+          --saves flag to indicates the path where to saves results (default: saves folder inside project)
+          --labels_txt to specify for foraminifera that the labels are provided in txt files (dataset with fold x, label_x.txt)
           --no_valid indicates if ignore validation and do only training
           --directory' indicates if input is a folder of mat files (group of datasets)
 ```
