@@ -23,15 +23,8 @@ class EuroSATDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        # Access the 13-band image
         image = self.data[idx]
-
-        # Access the numeric label
         label = self.labels[idx]
-
-        # Ensure the image has 13 channels
-        if image.shape[0] != 13:
-            raise ValueError(f"Expected image shape [13, height, width], but got {image.shape}")
 
         # Apply transformations, if any
         if self.transform:

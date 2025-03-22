@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 
 
-class EuroSATMatDataset(Dataset):
+class MatDataset(Dataset):
     """
     PyTorch Dataset for Mat file data with multi-band images.
 

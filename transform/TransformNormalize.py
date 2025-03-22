@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 
-class EuroSATNormalize:
+class TransformNormalize:
     """
     Normalization for multispectral images.
 
@@ -25,8 +25,6 @@ class EuroSATNormalize:
         Returns:
             torch.tensor: Normalized image tensor.
         """
-        # if image.shape[0] != 13:
-        #     raise ValueError(f"Expected 13 bands, but got {image.shape[0]} bands")
 
         image = image.astype(np.float32)
 

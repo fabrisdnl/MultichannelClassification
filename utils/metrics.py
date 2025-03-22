@@ -131,7 +131,7 @@ def plot_metrics_train(train_losses, val_losses, train_accuracies, val_accuracie
 
 def plot_metrics_train_only(train_losses, train_accuracies, output_dir):
     """
-    Plots training/validation losses, accuracies, and saves the plots.
+    Plots training losses, accuracies, and saves the plots.
 
     Args:
         train_losses (list): List of training losses for each epoch.

@@ -5,7 +5,6 @@ import numpy as np
 import tifffile as tiff
 import torch
 from torch.utils.data import DataLoader
-from base.EuroSATDataset import EuroSATDataset
 import pickle
 from sklearn.decomposition import PCA
 import cv2
@@ -311,40 +310,6 @@ def split_data_preloaded(images, labels, train_split, validation_split):
             "data": [images[i] for i in test_indices],
             "labels": [labels[i] for i in test_indices],
         },
-    }
-
-
-def create_datasets(splits, train_transform, val_test_transform, val_split=0.1):
-    """
-    Creates train, validation, and test datasets from a given split.
-
-    Args:
-        splits (dict): Dictionary containing 'train' and 'test' (image paths and labels).
-        train_transform (callable): Transformations for the training set.
-        val_test_transform (callable): Transformations for validation and test sets.
-        val_split (float): Fraction of the training set to use as validation set.
-
-    Returns:
-        dict: Dictionary with 'train', 'validation', and 'test' datasets.
-    """
-    train_image_paths, train_labels = splits["train"]
-    test_image_paths, test_labels = splits["test"]
-
-    # Split the training set into training and validation sets
-    total_train = len(train_image_paths)
-    val_size = int(val_split * total_train)
-    train_size = total_train - val_size
-
-    val_image_paths = train_image_paths[train_size:]
-    val_labels = train_labels[train_size:]
-    train_image_paths = train_image_paths[:train_size]
-    train_labels = train_labels[:train_size]
-
-    # Create datasets
-    return {
-        "train": EuroSATDataset(train_image_paths, train_labels, transform=train_transform),
-        "validation": EuroSATDataset(val_image_paths, val_labels, transform=val_test_transform),
-        "test": EuroSATDataset(test_image_paths, test_labels, transform=val_test_transform),
     }
 
 
