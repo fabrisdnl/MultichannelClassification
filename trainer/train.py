@@ -27,9 +27,6 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
     model.to(device)
     scaler = GradScaler('cuda')
 
-    print(f"Using device: {device}")
-    print(f"Model on GPU? {next(model.parameters()).is_cuda}")
-
     # Initialize lists to store losses and accuracies
     metrics = {'train_losses': [], 'train_accuracies': [], 'val_losses': [], 'val_accuracies': []}
 

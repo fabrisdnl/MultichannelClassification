@@ -28,10 +28,6 @@ class EuroSATTransform:
         Returns:
             torch.Tensor: Transformed image tensor.
         """
-        # Ensure image has 13 channels
-        # if image.shape[0] != 13:
-        #     raise ValueError(f"Expected 13 bands, but got {image.shape[0]} bands")
-
         # Convert image to float32 for normalization
         image = image.astype(np.float32)
 

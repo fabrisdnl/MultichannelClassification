@@ -3,7 +3,6 @@ import sys
 import os
 from utils import utils, metrics
 from base.MatDataset import MatDataset
-from transform.EuroSATTransform import EuroSATTransform
 from transform.TransformNormalize import TransformNormalize
 from model.AdaptedHybridModel import AdaptedHybridModel
 from trainer import train, test, test_logits, train_only
