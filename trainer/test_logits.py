@@ -7,13 +7,13 @@ import torch.nn.functional as F
 
 def test_model(model, test_loader, device, save_dir, file_name_without_ext):
     """
-    Evaluate the model on the test dataset and save logits.
+    Evaluate the model on the test dataset and save logits/probs.
 
     Args:
         model (torch.nn.Module): Trained model to evaluate.
         test_loader (DataLoader): DataLoader for the test dataset.
         device (torch.device): Device to use for evaluation.
-        save_dir (str): Path where to save the logits.
+        save_dir (str): Path where to save the logits/probs.
         file_name_without_ext (str): Name of the input file.
 
     Returns:
@@ -45,10 +45,10 @@ def test_model(model, test_loader, device, save_dir, file_name_without_ext):
     print(f"all_logits shape: {all_logits.shape}")
     print(f"all_probs shape: {all_probs.shape}")
 
-    # Save logits and probs to a file
+    # Save logits and probs
     save_path = os.path.join(save_dir, f"logits_{file_name_without_ext}.npy")
     np.save(save_path, all_logits)
     save_prob_path = os.path.join(save_dir, f"probs_{file_name_without_ext}.npy")
     np.save(save_prob_path, all_probs)
 
-    return all_logits
+    return all_logits, all_probs

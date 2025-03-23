@@ -12,7 +12,7 @@ def train_model(model, train_loader, criterion, optimizer, scheduler, device, nu
         train_loader (DataLoader): DataLoader for the training dataset.
         criterion (torch.nn.Module): Loss function.
         optimizer (torch.optim.Optimizer): Optimization algorithm.
-        scheduler (torch.optim.lr_scheduler._LRScheduler or ReduceLROnPlateau): Learning rate scheduler.
+        scheduler (torch.optim.lr_scheduler.<scheduler>): Learning rate scheduler.
         device (torch.device): Device to use for training.
         num_epochs (int): Number of epochs to train the model.
 
@@ -46,27 +46,22 @@ def train_model(model, train_loader, criterion, optimizer, scheduler, device, nu
                 optimizer.zero_grad()
 
                 if torch.isnan(inputs).any() or torch.isinf(inputs).any():
-                    print(f"[DEBUG] NaN o Inf trovati nei dati di input! Batch index: {t_epoch.n}")
+                    print(f"[DEBUG] NaN or Inf found in input data! Batch index: {t_epoch.n}")
                     print(
                         f"Min: {inputs.min().item()}, Max: {inputs.max().item()}, Mean: {inputs.mean().item()}, Std: {inputs.std().item()}")
 
                 # Mixed precision training
                 with autocast(device_type="cuda", dtype=torch.float16):
                     outputs = model(inputs)
-                    # print(f"[DEBUG] Model output min: {outputs.min().item()}, max: {outputs.max().item()}")
+
                     if torch.isnan(outputs).any() or torch.isinf(outputs).any():
-                        print(f"[DEBUG] NaN o Inf nei logits all'epoch {epoch + 1}, batch {t_epoch.n}")
+                        print(f"[DEBUG] NaN or Inf in logits of epoch {epoch + 1}, batch {t_epoch.n}")
                         print(
                             f"Logits min: {outputs.min().item()}, max: {outputs.max().item()}, mean: {outputs.mean().item()}")
                     loss = criterion(outputs, labels)
                     if torch.isnan(loss) or torch.isinf(loss):
-                        print(f"[DEBUG] Loss è NaN o Inf all'epoch {epoch + 1}, batch {t_epoch.n}")
+                        print(f"[DEBUG] Loss is NaN or Inf on epoch {epoch + 1}, batch {t_epoch.n}")
                         print(f"Loss value: {loss.item()}")
-
-                for name, param in model.named_parameters():
-                    if param.grad is not None:
-                        max_grad = param.grad.abs().max()
-                        print(f"[DEBUG] Gradiente max per {name}: {max_grad}")
 
                 # Scale loss and update weights
                 scaler.scale(loss).backward()

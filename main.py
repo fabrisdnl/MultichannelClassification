@@ -25,8 +25,6 @@ def create_arg_parser():
     parser.add_argument('--dataset_path', required=True, help='Path to the dataset directory containing images.')
     parser.add_argument('--saves_dir', default="saves", help='Path to save models and logs (default: "saves").')
     parser.add_argument('--load_saved_models', action='store_true', help='Load pre-trained models if available.')
-    parser.add_argument('--compressed_dataset', action='store_true', help='Indicates if the dataset is in compressed '
-                                                                          'HDF5 format.')
     parser.add_argument('--labels_txt', action='store_true', help='Indicates if the labels must be read on txt.')
     parser.add_argument('--no_valid', action='store_true', help='Indicates if ignore validation and do only training.')
     parser.add_argument('--directory', action='store_true', help='Indicates if input is a folder o mat files.')
@@ -49,7 +47,7 @@ def process_mat_no_valid(dataloaders, device, num_channels, save_dir, load_saved
         file_name_without_ext (str): Name of the input file.
 
     Returns:
-        dict: Dictionary containing metrics and logits.
+        dict: Dictionary containing metrics and logits/probs.
     """
     model_path = os.path.join(save_dir, f"model_{file_name_without_ext}.pth")
     metrics_path = os.path.join(save_dir, f"metrics_{file_name_without_ext}.pkl")
@@ -81,12 +79,13 @@ def process_mat_no_valid(dataloaders, device, num_channels, save_dir, load_saved
 
     # Test the model
     print(f"Testing model...")
-    logits = test_logits.test_model(model, dataloaders["test"], device, save_dir, file_name_without_ext)
+    logits, probs = test_logits.test_model(model, dataloaders["test"], device, save_dir, file_name_without_ext)
 
     return {
         "train_losses": train_losses,
         "train_accuracies": train_accuracies,
-        "logits": logits
+        "logits": logits,
+        "probs": probs
     }
 
 
@@ -104,7 +103,7 @@ def process_mat(dataloaders, device, num_channels, save_dir, load_saved_models, 
         file_name_without_ext (str): Name of the input file.
 
     Returns:
-        dict: Dictionary containing metrics and logits.
+        dict: Dictionary containing metrics and logits/probs.
     """
     model_path = os.path.join(save_dir, f"model_{file_name_without_ext}.pth")
     metrics_path = os.path.join(save_dir, f"metrics_{file_name_without_ext}.pkl")
@@ -140,18 +139,19 @@ def process_mat(dataloaders, device, num_channels, save_dir, load_saved_models, 
 
     # Test the model
     print(f"Testing model...")
-    logits = test_logits.test_model(model, dataloaders["test"], device, save_dir, file_name_without_ext)
+    logits, probs = test_logits.test_model(model, dataloaders["test"], device, save_dir, file_name_without_ext)
 
     return {
         "train_losses": train_losses,
         "val_losses": val_losses,
         "train_accuracies": train_accuracies,
         "val_accuracies": val_accuracies,
-        "logits": logits
+        "logits": logits,
+        "probs": probs
     }
 
 
-def execute(data_dir, save_dir, load_saved_models, compressed_dataset, labels_txt, no_valid):
+def execute(data_dir, save_dir, load_saved_models, labels_txt, no_valid):
     file_name = os.path.basename(data_dir)
     file_name_without_ext = os.path.splitext(file_name)[0]
 
@@ -204,11 +204,11 @@ def execute(data_dir, save_dir, load_saved_models, compressed_dataset, labels_tx
         results = process_mat_no_valid(dataloaders, device, num_channels, save_dir,
                                 load_saved_models, unique_labels, file_name_without_ext)
 
-        metrics.plot_metrics_train_only(
-            train_losses=results["train_losses"],
-            train_accuracies=results["train_accuracies"],
-            output_dir=output_dir,
-        )
+        # metrics.plot_metrics_train_only(
+        #     train_losses=results["train_losses"],
+        #     train_accuracies=results["train_accuracies"],
+        #     output_dir=output_dir,
+        # )
 
         print("Execution terminated.")
     else:
@@ -224,7 +224,7 @@ def execute(data_dir, save_dir, load_saved_models, compressed_dataset, labels_tx
         # Apply shuffled indices to both images and labels
         train_images = train_data[train_indices]
         valid_images = train_data[valid_indices]
-        test_images = test_data  # Test set remains unchanged
+        test_images = test_data
 
         train_labels = labels[train_indices]
         valid_labels = labels[valid_indices]
@@ -278,8 +278,15 @@ def process_single_mat(file_path, save_dir, load_saved_models, no_valid, label_t
     num_channels = train_data.shape[1]
     print(f"Number of channels: {num_channels}")
 
+    # Get dataset sizes
+    num_train = len(train_data)
+    num_test = len(test_data)
+    num_labels = len(labels)
+    unique_labels = np.unique(labels)
+
     mean, std = utils.compute_mean_std_mat(train_data)
-    labels -= 1  # Convert MATLAB labels to zero-based index
+    # Convert MATLAB labels to zero-based index
+    labels -= 1
 
     unique_labels = np.unique(labels)
 
@@ -400,4 +407,4 @@ if __name__ == '__main__':
                     parsed_args.no_valid, parsed_args.labels_txt)
     else:
         execute(parsed_args.dataset_path, parsed_args.saves_dir, parsed_args.load_saved_models,
-                parsed_args.compressed_dataset, parsed_args.labels_txt, parsed_args.no_valid)
+                parsed_args.labels_txt, parsed_args.no_valid)

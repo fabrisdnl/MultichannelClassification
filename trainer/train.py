@@ -1,4 +1,4 @@
-import torch, gc
+import torch
 from tqdm import tqdm
 from torch.amp import autocast, GradScaler
 
@@ -13,7 +13,7 @@ def train_model(model, train_loader, validation_loader, criterion, optimizer, sc
         validation_loader (DataLoader): DataLoader for the validation dataset.
         criterion (torch.nn.Module): Loss function.
         optimizer (torch.optim.Optimizer): Optimization algorithm.
-        scheduler (torch.optim.lr_scheduler._LRScheduler or ReduceLROnPlateau): Learning rate scheduler.
+        scheduler (torch.optim.lr_scheduler.<scheduler>): Learning rate scheduler.
         device (torch.device): Device to use for training.
         num_epochs (int): Number of epochs to train the model.
 
