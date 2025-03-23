@@ -1,4 +1,4 @@
-# Land Cover Classification
+# Multichannel Classification
 
 ## Overview
 This project focuses multi-spectral images analysis. Two applications were tested: satellite image classification tested on the EuroSAT and LCZ42 datasets and  a species-level identification of planktic foraminifera.
